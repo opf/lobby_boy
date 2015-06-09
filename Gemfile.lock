@@ -16,7 +16,7 @@ PATH
       omniauth (~> 1.1)
       omniauth-openid-connect (>= 0.2)
       rack-cors (~> 0.4.0)
-      rails (~> 3.2.21)
+      rails (>= 3.2.21)
 
 GEM
   remote: https://rubygems.org/
