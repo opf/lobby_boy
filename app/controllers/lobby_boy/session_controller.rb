@@ -20,11 +20,6 @@ module LobbyBoy
       end
     end
 
-    # @TODO get rid of this, state doesn't need the ID token
-    def id_token
-      Hash(session[:lobby_boy])[:id_token]
-    end
-
     def end
       cookies.delete :oidc_rp_state, domain: LobbyBoy.client.cookie_domain
 
@@ -70,7 +65,8 @@ module LobbyBoy
 
     module InstanceMethods
       def id_token
-        Hash(session[:openid_connect])[:id_token]
+        token = session['lobby_boy.id_token']
+        ::LobbyBoy::OpenIDConnect::IdToken.new token if token
       end
     end
 

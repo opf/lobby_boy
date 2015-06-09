@@ -3,9 +3,7 @@ module LobbyBoy
     ##
     # Call in host rails controller to confirm that the user was logged in.
     def confirm_login!
-      session[:lobby_boy] = {
-          id_token: env['lobby_boy.id_token']
-      }
+      session['lobby_boy.id_token'] = env['lobby_boy.id_token'].jwt_token
       cookies[:oidc_rp_state] = env['lobby_boy.cookie']
     end
 
@@ -14,7 +12,8 @@ module LobbyBoy
     end
 
     def id_token
-      Hash(session[:lobby_boy])[:id_token]
+      token = session['lobby_boy.id_token']
+      ::LobbyBoy::OpenIDConnect::IdToken.new token if token
     end
 
     def logout_at_op!(return_url = nil)
