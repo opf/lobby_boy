@@ -13,7 +13,9 @@ module AuthorizeUriParameters
   end
 
   def access_token
-    super.tap do |at|
+    at = super
+
+    @id_token ||= begin
       session_state = request.params['session_state']
       id_token = ::LobbyBoy::OpenIDConnect::IdToken.new at.id_token
       env['lobby_boy.id_token'] = id_token
@@ -29,8 +31,12 @@ module AuthorizeUriParameters
             expires: id_token.expires_in.seconds.from_now,
             domain: LobbyBoy.client.cookie_domain
         }
+
+        id_token
       end
     end
+
+    at
   end
 end
 
