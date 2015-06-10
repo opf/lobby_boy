@@ -1,7 +1,5 @@
-require_dependency "lobby_boy/application_controller"
-
 module LobbyBoy
-  class SessionController < ApplicationController
+  class SessionController < ActionController::Base
     layout false
 
     def check
