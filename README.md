@@ -1,2 +1,144 @@
 # lobby_boy
 Rails engine for OpenID Connect Session Management
+
+## Dependencies
+
+If not present yet add the following gem:
+
+```ruby
+gem 'omniauth-openid-connect', git: 'https://github.com/jjbohn/omniauth-openid-connect.git', branch: 'master'
+```
+
+## Usage
+
+You have to do 5 steps to enable session management in your application:
+
+1. Mount the engine.
+2. Configure lobby_boy.
+3. Render lobby_boy's iframes partial in your layout.
+4. Call lobby_boy's `SessionHelper#confirm_login!` when the user is logged in.
+5. Call lobby_boy's `SessionHelper#logout_at_op!` when the user logs out.
+6. (optional) Implement the end_session_endpoint to be used by lobby_boys Javascript.
+
+The following sections will describe those steps in more detail.
+
+### 1. Mount the engine
+
+To mount the engine into your application add the following to your `config/routes.rb`:
+
+```ruby
+require 'lobby_boy'
+
+Rails.application.routes.draw do
+  mount LobbyBoy::Engine, at: '/'
+end
+```
+
+### 2. Configure lobby_boy
+
+The are two sections to be configured:
+
+*client*
+
+This refers to your application which is an OpenID Connect client.
+All lobby_boy needs to know about it is its `host` and `end_session_endpoint` (i.e. logout URL).
+For instance:
+
+```ruby
+LobbyBoy.configure_client! host: "https://myapp.com",
+                           end_session_endpoint: '/logout'
+```
+
+*provider*
+
+The OpenIDConnect provider has to support Session Management too. The essential details
+required for the provider are its `name` (its strategy being available under `/auth/$name`)
+and the `identifier` under which your client is registered at the provider.
+
+If the provider supports discovery this is everything. If not you will also have to configure
+the `issuer`, `end_session_endpoint` and `check_session_iframe`.
+
+For instance for **Concierge** which does not support discovery yet:
+
+```ruby
+LobbyBoy.configure_provider! name:                 'concierge',
+                             client_id:            'openproject',
+                             issuer:               'https://concierge.openproject.com',
+                             end_session_endpoint: '/session/end',
+                             check_session_iframe: '/session/check']
+```
+
+### 3. Render lobby_boy's iframes partial in your layout.
+
+Session Management requires two iframes, the relying party iframe and the OpenIDConnect provider iframe,
+to be rendered at all times, on every page.
+In a standard rails application you would do this by inserting the following line into
+`app/views/layouts/application.html.erb`:
+
+```
+<%= render 'lobby_boy/iframes' %>
+```
+
+### 4. Call lobby_boy's `SessionHelper#confirm_login!` when the user is logged in.
+
+The `#confirm_login!` helper stores the logged-in user's ID token in the session
+and sets the `oidc_rp_state` cookie. Which means that this helper has to be called
+in the context of the final action handling the user's login.
+
+Another thing the login must do is to redirect the user to the omniauth origin.
+It should do that already if implemented correctly.
+
+For instance:
+
+```ruby
+class SessionController < ApplicationController
+  include LobbyBoy::SessionHelper
+
+  def login
+    # existing logic:
+    # ...
+
+    confirm_login!
+    redirect_to(request.env['omniauth.origin'] || default_url)
+  end
+end
+```
+
+### Call lobby_boy's `SessionHelper#logout_at_op!` when the user logs out.
+
+When the user logs out of the application they should also be logged out of the
+OpenID Connect provider. To do that call the `#logout_at_op!` helper in your existing logout action.
+The helper will redirect the user to the provider's logout endpoint to log them out globally.
+You can pass a return URL to which the provider will send the user after the logout.
+
+For instance:
+
+```ruby
+class SessionController < ApplicationController
+  def logout
+    # The helper will return false and do nothing the provider's
+    # end_session_endpoint is not configured.
+    unless logout_at_op! root_url
+      redirect_to root_url
+    end
+  end
+end
+```
+
+### 6. (optional) Implement the end_session_endpoint to be used by lobby_boys Javascript.
+
+The Javascript of lobby_boy may logout the user via AJAX request when it realizes that
+the use has been logged out at the OpenID Connect provider.
+To reduce traffic you may want to implement a separate logout endpoint for this
+which only renders a small 'OK' response as opposed to a fully-fledged HTML page.
+
+For instance:
+
+```ruby
+class SessionController < ApplicationController
+  def ajax_logout
+    logout_user!
+    render text: 'logged out'
+  end
+end
+```
