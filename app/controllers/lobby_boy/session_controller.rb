@@ -19,10 +19,7 @@ module LobbyBoy
     def end
       cookies.delete :oidc_rp_state, domain: LobbyBoy.client.cookie_domain
 
-      url = LobbyBoy::Util::URI.add_query_params LobbyBoy.client.end_session_endpoint,
-                                                 script: 'true'
-
-      redirect_to url
+      redirect_to LobbyBoy.client.end_session_endpoint
     end
 
     def refresh
