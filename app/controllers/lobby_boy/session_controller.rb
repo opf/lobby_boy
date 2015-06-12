@@ -10,8 +10,6 @@ module LobbyBoy
       id_token = self.id_token
 
       if id_token
-        puts "ID token expires in #{id_token.expires_in} seconds at #{id_token.expires_at}."
-
         render text: 'authenticated', status: 200
       else
         render text: 'unauthenticated', status: 401
