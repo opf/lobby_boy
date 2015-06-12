@@ -2,7 +2,7 @@ require 'omniauth/strategies/openid_connect'
 require 'lobby_boy/openid_connect/id_token'
 require 'lobby_boy/util/uri'
 
-module AuthorizeUriParameters
+module SessionManagement
   ##
   # Always append 'prompt=none' to every authorization request to make the login
   # automatic if possible.
@@ -40,4 +40,4 @@ module AuthorizeUriParameters
   end
 end
 
-OmniAuth::Strategies::OpenIDConnect.prepend AuthorizeUriParameters
+OmniAuth::Strategies::OpenIDConnect.prepend SessionManagement

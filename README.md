@@ -1,6 +1,8 @@
 # lobby_boy
 Rails engine for OpenID Connect Session Management
 
+Assumes the use of OmniAuth and the `omniauth-openid-connect` strategy.
+
 ## Dependencies
 
 If not present yet add the following gem:

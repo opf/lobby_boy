@@ -23,11 +23,8 @@
                 return self.clientId + " " + state;
             };
             var checkState = function(state) {
-                console.log("got new session state: " + state);
                 provider.postMessage(message(state), self.targetOrigin);
             };
-
-            console.log("RP session state: " + Cookies.get('oidc_rp_state'));
 
             var state = Cookies.get("oidc_rp_state");
             var time = new Date().getTime() / 1000;
@@ -38,10 +35,15 @@
                 if (state.expires_at - time > offset) {
                     checkState(state.state);
                 } else {
+                    /**
+                     * We prematurely 'expire' the session state to ensure that the user
+                     * remains logged in constantly. Otherwise it could happen that the
+                     * user is logged out briefly between the time the old ID token expired
+                     * and the time it takes to re-authenticate.
+                     */
                     checkState("refresh.please");
                 }
             } else {
-                console.log("user is not logged in");
                 // not logged in
             }
         };
