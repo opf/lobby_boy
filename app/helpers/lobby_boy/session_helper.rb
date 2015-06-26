@@ -3,8 +3,10 @@ module LobbyBoy
     ##
     # Call in host rails controller to confirm that the user was logged in.
     def confirm_login!
-      session['lobby_boy.id_token'] = env['lobby_boy.id_token'].jwt_token
-      cookies[:oidc_rp_state] = env['lobby_boy.cookie']
+      if LobbyBoy.configured?
+        session['lobby_boy.id_token'] = env['lobby_boy.id_token'].jwt_token
+        cookies[:oidc_rp_state] = env['lobby_boy.cookie']
+      end
     end
 
     def id_token_expired?
@@ -17,6 +19,8 @@ module LobbyBoy
     end
 
     def logout_at_op!(return_url = nil)
+      return false unless LobbyBoy.configured?
+
       id_token_hint = id_token && id_token.jwt_token
       logout_url = LobbyBoy::Util::URI.add_query_params(
           LobbyBoy.provider.end_session_endpoint,
