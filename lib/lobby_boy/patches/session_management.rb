@@ -13,6 +13,8 @@ module SessionManagement
   end
 
   def access_token
+    return super unless LobbyBoy.configured?
+    
     at = super
 
     @id_token ||= begin
