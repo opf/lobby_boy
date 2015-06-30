@@ -13,8 +13,8 @@
 
         this.clientId = "<%= LobbyBoy.provider.client_id %>";
         this.targetOrigin = "<%= LobbyBoy.provider.issuer %>";
-        this.loggedIn = false;
-        this.timerOffsetMs = 10 * 1000;
+        this.loggedIn = (window.parent.OpenIDConnect && window.parent.OpenIDConnect.loggedIn)
+                          || false;
         this.timerIntervalMs = 10 * 1000;
 
         this.getIFrame = function(id) {
@@ -54,14 +54,11 @@
         };
 
         this.startTimer = function() {
-            var go = function() {
-                self.timerID = setInterval(self.checkSession, self.timerIntervalMs);
-            };
-
             if (self.timerID) {
                 self.stopTimer(); // stop previous timer if present
             }
-            setTimeout(go, self.timerOffsetMs);
+
+            self.timerID = setInterval(self.checkSession, self.timerIntervalMs);
         };
 
         this.stopTimer = function() {
@@ -93,6 +90,7 @@
 
         this.onReauthenticationFailure = function() {
             if (self.loggedIn !== false) {
+                self.loggedIn = false;
                 self.logout();
             }
         };
@@ -128,6 +126,14 @@
         };
 
         window.addEventListener("message", self.receiveMessage, false);
+
+        <% if state == 'authenticated' %>
+            self.onReauthenticationSuccess();
+        <% elsif state == 'unauthenticated' %>
+            self.onReauthenticationFailure();
+        <% elsif state == 'logout' %>
+            self.onLogout();
+        <% end %>
 
         self.startTimer();
     };

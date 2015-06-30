@@ -4,6 +4,8 @@ module LobbyBoy
 
     def check
       response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+
+      render 'check', locals: { state: 'init' }
     end
 
     def state
@@ -16,7 +18,7 @@ module LobbyBoy
           self.id_token ? 'authenticated' : 'unauthenticated'
         end
 
-      render 'state', locals: { state: current_state }
+      render 'check', locals: { state: current_state }
     end
 
     def end
