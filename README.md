@@ -13,14 +13,14 @@ gem 'omniauth-openid-connect', git: 'https://github.com/jjbohn/omniauth-openid-c
 
 ## Usage
 
-You have to do 5 steps to enable session management in your application:
+You have to do 6 steps to enable session management in your application:
 
 1. Mount the engine.
 2. Configure lobby_boy.
 3. Render lobby_boy's iframes partial in your layout.
 4. Call lobby_boy's `SessionHelper#confirm_login!` when the user is logged in.
 5. Call lobby_boy's `SessionHelper#logout_at_op!` when the user logs out.
-6. (optional) Implement the end_session_endpoint to be used by lobby_boys Javascript.
+6. Implement the end_session_endpoint to be used by lobby_boys Javascript.
 
 The following sections will describe those steps in more detail.
 
@@ -106,6 +106,32 @@ class SessionController < ApplicationController
 end
 ```
 
+It is important that your login action redirects to `omniauth.origin` after a
+successful login.
+
+*Optional: reauthentication*
+
+If you have to behave differently when the user is reauthenticated you can
+additionally to the changes above use the reauthentication helpers.
+
+```ruby
+class SessionController < ApplicationController
+  include LobbyBoy::SessionHelper
+
+  def login
+    # existing logic:
+    # ...
+
+    confirm_login!
+
+    if reauthentication?
+      finish_reauthentication!
+    else
+      go_on_to_do_more_stuff_not_necessary_on_reauthentication
+    end
+  end
+end
+
 ### Call lobby_boy's `SessionHelper#logout_at_op!` when the user logs out.
 
 When the user logs out of the application they should also be logged out of the
@@ -127,20 +153,22 @@ class SessionController < ApplicationController
 end
 ```
 
-### 6. (optional) Implement the end_session_endpoint to be used by lobby_boys Javascript.
+### 6. Implement the end_session_endpoint to be used by lobby_boys Javascript.
 
-The Javascript of lobby_boy may logout the user via AJAX request when it realizes that
-the use has been logged out at the OpenID Connect provider.
-To reduce traffic you may want to implement a separate logout endpoint for this
-which only renders a small 'OK' response as opposed to a fully-fledged HTML page.
+The Javascript of lobby_boy may logout the user when it realizes that
+the user has been logged out at the OpenID Connect provider.
+You have to implement the `end_session_endpoint` and after logging out
+the user you have to call `finish_logout!` from LobbyBoy's `SessionHelper`.
 
 For instance:
 
 ```ruby
 class SessionController < ApplicationController
-  def ajax_logout
+  include LobbyBoy::SessionHelper
+
+  def lobby_boy_logout
     logout_user!
-    render text: 'logged out'
+    finish_logout!
   end
 end
 ```

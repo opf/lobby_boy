@@ -7,13 +7,16 @@ module LobbyBoy
     end
 
     def state
-      id_token = self.id_token
+      current_state =
+        if params[:state] == 'unauthenticated'
+          'unauthenticated'
+        elsif params[:state] == 'logout'
+          'logout'
+        else
+          self.id_token ? 'authenticated' : 'unauthenticated'
+        end
 
-      if id_token
-        render text: 'authenticated', status: 200
-      else
-        render text: 'unauthenticated', status: 401
-      end
+      render 'state', locals: { state: current_state }
     end
 
     def end

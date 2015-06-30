@@ -1,0 +1,11 @@
+<script type="text/javascript">
+    var self = window.parent.OpenIDConnect;
+
+    <% if state == 'authenticated' %>
+        self.onReauthenticationSuccess();
+    <% elsif state == 'unauthenticated' %>
+        self.onReauthenticationFailure();
+    <% elsif state == 'logout' %>
+        self.onLogout();
+    <% end %>
+</script>
