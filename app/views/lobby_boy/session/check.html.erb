@@ -1,4 +1,3 @@
-<%= javascript_include_tag 'jquery' %>
 <%= javascript_include_tag 'js.cookie-1.5.1.min' %>
 
 <%#
@@ -14,10 +13,16 @@
 
         this.clientId = "<%= LobbyBoy.provider.client_id %>";
         this.targetOrigin = "<%= LobbyBoy.provider.issuer %>";
-        this.loggedIn = false;
+        this.loggedIn = (window.parent.OpenIDConnect && window.parent.OpenIDConnect.loggedIn)
+                          || false;
+        this.timerIntervalMs = 10 * 1000;
+
+        this.getIFrame = function(id) {
+            return window.parent.document.getElementById(id).contentWindow;
+        }
 
         this.checkSession = function() {
-            var provider = window.parent.document.getElementById("openid_connect_provider").contentWindow;
+            var provider = self.getIFrame("openid_connect_provider");
 
             var message = function(state) {
                 return self.clientId + " " + state;
@@ -49,7 +54,11 @@
         };
 
         this.startTimer = function() {
-            self.timerID = setInterval(self.checkSession, 10 * 1000);
+            if (self.timerID) {
+                self.stopTimer(); // stop previous timer if present
+            }
+
+            self.timerID = setInterval(self.checkSession, self.timerIntervalMs);
         };
 
         this.stopTimer = function() {
@@ -58,17 +67,13 @@
 
         this.reauthenticate = function() {
             console.log("I ought to re-authenticate");
-            jQuery.ajax({
-                url: "<%= session_refresh_url %>",
-                async: true,
-                success: self.onReauthenticationSuccess,
-                error: self.onReauthenticationFailure,
-                xhrFields: { withCredentials: true }
-            });
+
+            var check_session_iframe = self.getIFrame("openid_connect_relying_party");
+
+            check_session_iframe.document.location.href = "<%= session_refresh_url %>";
         };
 
-        this.onReauthenticationSuccess = function(state) {
-            self.state = state;
+        this.onReauthenticationSuccess = function() {
             console.log("Re-authenticated successfully.");
 
             /**
@@ -83,8 +88,11 @@
             }
         };
 
-        this.onReauthenticationFailure = function(xhr, status) {
-            self.onLogout();
+        this.onReauthenticationFailure = function() {
+            if (self.loggedIn !== false) {
+                self.loggedIn = false;
+                self.logout();
+            }
         };
 
         this.onLogin = function() {
@@ -92,26 +100,15 @@
         };
 
         this.onLogout = function() {
-            if (self.loggedIn !== false) {
-                self.logout(function() {
-                    alert("You've been logged out.");
-                });
-            }
+            alert("You've been logged out.");
         };
 
         this.logout = function(callback) {
             console.log("I ought to log out.");
-            jQuery.ajax({
-                url: "<%= session_end_url %>",
-                async: true,
-                complete: function(xhr, status) {
-                    self.loggedIn = false;
-                    if (callback) {
-                        callback();
-                    }
-                },
-                xhrFields: { withCredentials: true }
-            });
+
+            var check_session_iframe = self.getIFrame("openid_connect_relying_party");
+
+            check_session_iframe.document.location.href = "<%= session_end_url %>";
         };
 
         this.receiveMessage = function(e) {
@@ -129,6 +126,14 @@
         };
 
         window.addEventListener("message", self.receiveMessage, false);
+
+        <% if state == 'authenticated' %>
+            self.onReauthenticationSuccess();
+        <% elsif state == 'unauthenticated' %>
+            self.onReauthenticationFailure();
+        <% elsif state == 'logout' %>
+            self.onLogout();
+        <% end %>
 
         self.startTimer();
     };

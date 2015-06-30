@@ -18,7 +18,7 @@ module LobbyBoy
 
       def call
         if script?
-          Rack::Response.new(['401 Unauthorized'], 401, {}).finish
+          redirect_to '/session/state?state=unauthenticated'
         elsif retry?
           retry_interactive
         else

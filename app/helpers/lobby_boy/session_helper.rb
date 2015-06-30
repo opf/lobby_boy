@@ -9,6 +9,18 @@ module LobbyBoy
       end
     end
 
+    def finish_reauthentication!
+      redirect_to(lobby_boy_path + 'session/state')
+    end
+
+    def reauthentication?
+      env['omniauth.origin'] == '/session/state'
+    end
+
+    def finish_logout!
+      redirect_to(lobby_boy_path + 'session/state?state=logout')
+    end
+
     def id_token_expired?
       id_token && id_token.expires_in == 0
     end
