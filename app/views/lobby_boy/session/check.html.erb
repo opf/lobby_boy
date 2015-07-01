@@ -96,11 +96,19 @@
         };
 
         this.onLogin = function() {
-            window.parent.document.location.reload();
+            <% if LobbyBoy.client.on_login_js_partial %>
+                <%= render partial: LobbyBoy.client.on_login_js_partial %>
+            <% else %>
+                window.parent.document.location.reload();
+            <% end %>
         };
 
         this.onLogout = function() {
-            alert("You've been logged out.");
+            <% if LobbyBoy.client.on_logout_js_partial %>
+                <%= render partial: LobbyBoy.client.on_logout_js_partial %>
+            <% else %>
+                alert("You've been logged out.");
+            <% end %>
         };
 
         this.logout = function(callback) {

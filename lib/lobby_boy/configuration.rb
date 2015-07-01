@@ -9,7 +9,8 @@ module LobbyBoy
     end
 
     class Client
-      attr_reader :host, :end_session_endpoint, :refresh_offset, :cookie_domain
+      attr_reader :host, :end_session_endpoint, :refresh_offset, :cookie_domain,
+                  :on_login_js_partial, :on_logout_js_partial
 
       include HashInit
     end
