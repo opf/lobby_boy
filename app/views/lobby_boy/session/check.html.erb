@@ -116,7 +116,7 @@
 
         this.onLogin = function() {
             <% if LobbyBoy.client.on_login_js_partial %>
-                <%= render partial: LobbyBoy.client.on_login_js_partial %>
+                <%= render partial: LobbyBoy.client.on_login_js_partial, formats: [:js] %>
             <% else %>
                 window.parent.document.location.reload();
             <% end %>
@@ -124,7 +124,7 @@
 
         this.onLogout = function() {
             <% if LobbyBoy.client.on_logout_js_partial %>
-                <%= render partial: LobbyBoy.client.on_logout_js_partial %>
+                <%= render partial: LobbyBoy.client.on_logout_js_partial, formats: [:js] %>
             <% else %>
                 alert("You've been logged out.");
             <% end %>
