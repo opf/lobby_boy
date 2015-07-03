@@ -9,7 +9,9 @@ module LobbyBoy
     end
 
     class Client
-      attr_reader :host, :end_session_endpoint, :refresh_offset, :cookie_domain,
+      attr_reader :host, :cookie_domain,
+                  :logged_in, :end_session_endpoint,
+                  :refresh_offset, :refresh_interval,
                   :on_login_js_partial, :on_logout_js_partial
 
       include HashInit
@@ -48,6 +50,8 @@ module LobbyBoy
           host_name opts[:host]
         end
       opts[:refresh_offset] ||= 60.seconds
+      opts[:refresh_interval] ||= 30.seconds
+      opts[:logged_in] ||= lambda { false }
 
       @client = Client.new opts
     end

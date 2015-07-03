@@ -10,12 +10,13 @@
 
     window.parent.OpenIDConnect = new function() {
         var self = this;
+        var locallyLoggedIn = <%= logged_in %>;
 
         this.clientId = "<%= LobbyBoy.provider.client_id %>";
         this.targetOrigin = "<%= LobbyBoy.provider.issuer %>";
         this.loggedIn = (window.parent.OpenIDConnect && window.parent.OpenIDConnect.loggedIn)
-                          || false;
-        this.timerIntervalMs = 10 * 1000;
+                          || locallyLoggedIn;
+        this.timerIntervalMs = <%= LobbyBoy.client.refresh_interval %> * 1000;
 
         this.getIFrame = function(id) {
             return window.parent.document.getElementById(id).contentWindow;
@@ -27,6 +28,13 @@
             var message = function(state) {
                 return self.clientId + " " + state;
             };
+
+            /**
+             * Checking the state has two possible outcomes depending on the user's
+             * global login state. Either the user is logged in in which case
+             * their ID token is refreshed, or they aren't in which case they
+             * are logged out of the application and notified about the logout.
+             */
             var checkState = function(state) {
                 provider.postMessage(message(state), self.targetOrigin);
             };
@@ -35,16 +43,27 @@
             var time = new Date().getTime() / 1000;
             var offset = <%= LobbyBoy.client.refresh_offset %>;
 
-            if (state !== undefined) {
+            if (state || locallyLoggedIn) {
                 self.loggedIn = true;
-                if (state.expires_at - time > offset) {
+
+                if (state && state.expires_at - time > offset) {
                     checkState(state.state);
-                } else {
+                } else if (!state && locallyLoggedIn) {
                     /**
-                     * We prematurely 'expire' the session state to ensure that the user
-                     * remains logged in constantly. Otherwise it could happen that the
-                     * user is logged out briefly between the time the old ID token expired
-                     * and the time it takes to re-authenticate.
+                     * This branch is executed in two cases:
+                     *
+                     * 1) The state cookie is not set but the user is logged into the application
+                     *
+                     *    This can happen if the previous state cookie expired but the user's normal
+                     *    application session hasn't. At this point we don't know the user's
+                     *    global login status. Hence we force a re-authentication to sync the state.
+                     *
+                     * 2) The state is set but is about to expire.
+                     *
+                     *    We prematurely 'expire' the session state to ensure that the user
+                     *    remains logged in constantly. Otherwise it could happen that the
+                     *    user is logged out briefly between the time the old ID token expired
+                     *    and the time it takes to re-authenticate.
                      */
                     checkState("refresh.please");
                 }
@@ -97,7 +116,7 @@
 
         this.onLogin = function() {
             <% if LobbyBoy.client.on_login_js_partial %>
-                <%= render partial: LobbyBoy.client.on_login_js_partial %>
+                <%= render partial: LobbyBoy.client.on_login_js_partial, formats: [:js] %>
             <% else %>
                 window.parent.document.location.reload();
             <% end %>
@@ -105,7 +124,7 @@
 
         this.onLogout = function() {
             <% if LobbyBoy.client.on_logout_js_partial %>
-                <%= render partial: LobbyBoy.client.on_logout_js_partial %>
+                <%= render partial: LobbyBoy.client.on_logout_js_partial, formats: [:js] %>
             <% else %>
                 alert("You've been logged out.");
             <% end %>
@@ -141,6 +160,8 @@
             self.onReauthenticationFailure();
         <% elsif state == 'logout' %>
             self.onLogout();
+        <% else %>
+            self.checkSession();
         <% end %>
 
         self.startTimer();
