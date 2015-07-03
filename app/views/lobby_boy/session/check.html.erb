@@ -161,7 +161,7 @@
         <% elsif state == 'logout' %>
             self.onLogout();
         <% else %>
-            self.checkSession();
+            setTimeout(self.checkSession, 0);
         <% end %>
 
         self.startTimer();
