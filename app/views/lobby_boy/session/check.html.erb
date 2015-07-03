@@ -161,7 +161,9 @@
         <% elsif state == 'logout' %>
             self.onLogout();
         <% else %>
-            setTimeout(self.checkSession, 0);
+            document.addEventListener("DOMContentLoaded", function(event) {
+              setTimeout(self.checkSession, 1000);
+            });
         <% end %>
 
         self.startTimer();
