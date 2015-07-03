@@ -2,6 +2,8 @@ module LobbyBoy
   class SessionController < ActionController::Base
     layout false
 
+    before_filter :set_cache_buster
+
     def check
       response.headers['X-Frame-Options'] = 'SAMEORIGIN'
 
@@ -76,6 +78,12 @@ module LobbyBoy
 
       def render_check(state)
         render 'check', locals: { state: state, logged_in: logged_in? }
+      end
+
+      def set_cache_buster
+        response.headers["Cache-Control"] = "no-cache, no-store, max-age=0, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "Fri, 01 Jan 1990 00:00:00 GMT"
       end
     end
 
