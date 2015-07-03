@@ -50,9 +50,9 @@ Here are all available client options, the rest of them which are optional:
 ```ruby
 LobbyBoy.configure_client! host: 'https://myapp.com',
                            end_session_endpoint: '/logout',
-                           # derived from host per default:
+                           # (optional) Derived from host per default:
                            cookie_domain: "myapp.com",
-                           # (optional) A block executed in the context of a rails view
+                           # (optional) A block executed in the context of a rails controller
                            # which returns true if the user is logged into
                            # the application:
                            logged_in: ->() { session.include? :user },
