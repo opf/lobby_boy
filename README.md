@@ -44,11 +44,33 @@ The are two sections to be configured:
 
 This refers to your application which is an OpenID Connect client.
 All lobby_boy needs to know about it is its `host` and `end_session_endpoint` (i.e. logout URL).
-For instance:
+
+Here are all available client options, the rest of them which are optional:
 
 ```ruby
-LobbyBoy.configure_client! host: "https://myapp.com",
-                           end_session_endpoint: '/logout'
+LobbyBoy.configure_client! host: 'https://myapp.com',
+                           end_session_endpoint: '/logout',
+                           # derived from host per default:
+                           cookie_domain: "myapp.com",
+                           # (optional) A block executed in the context of a rails view
+                           # which returns true if the user is logged into
+                           # the application:
+                           logged_in: ->() { session.include? :user },
+                           # (optional) Seconds before the ID token's expiration at which
+                           # to re-authenticate early:
+                           refresh_offset: 60,
+                           # (optional) Check the session state every 30 seconds and refresh
+                           # if out of sync:
+                           refresh_interval: 30,
+                           # (optional) A .js.erb (app/views/session/_on_login.js.erb) partial
+                           # to be rendered the code of which will be executed if the user is
+                           # logged in automatically:
+                           on_login_js_partial: 'session/on_login',
+                           # (optional) A .js.erb (app/views/session/_on_logout.js.erb) partial
+                           # to be rendered the code of which will be executed if the user is
+                           # logged out automatically:
+                           on_logout_js_partial: 'session/on_logout'
+
 ```
 
 *provider*
