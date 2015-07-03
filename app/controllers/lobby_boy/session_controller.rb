@@ -5,7 +5,7 @@ module LobbyBoy
     def check
       response.headers['X-Frame-Options'] = 'SAMEORIGIN'
 
-      render 'check', locals: { state: 'init' }
+      render_check 'init'
     end
 
     def state
@@ -18,7 +18,7 @@ module LobbyBoy
           self.id_token ? 'authenticated' : 'unauthenticated'
         end
 
-      render 'check', locals: { state: current_state }
+      render_check current_state
     end
 
     def end
@@ -59,12 +59,23 @@ module LobbyBoy
       def omniauth_prefix
         ::OmniAuth.config.path_prefix
       end
+
+      ##
+      # Returns true if the user is logged in locally or false
+      # if they aren't or we don't know whether or not they are.
+      def logged_in?
+        instance_exec &LobbyBoy.client.logged_in
+      end
     end
 
     module InstanceMethods
       def id_token
         token = session['lobby_boy.id_token']
         ::LobbyBoy::OpenIDConnect::IdToken.new token if token
+      end
+
+      def render_check(state)
+        render 'check', locals: { state: state, logged_in: logged_in? }
       end
     end
 
