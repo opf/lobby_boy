@@ -45,11 +45,11 @@
 
             if (state || locallyLoggedIn) {
                 self.loggedIn = true;
-                var expired = state.expires_at - time <= offset;
+                var expire = state && (state.expires_at - time <= offset);
 
-                if (state && !expired) {
+                if (state && !expire) {
                     checkState(state.state);
-                } else if (expired || (!state && locallyLoggedIn)) {
+                } else if (expire || (!state && locallyLoggedIn)) {
                     /**
                      * This branch is executed in two cases:
                      *
