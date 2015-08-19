@@ -49,7 +49,7 @@ module LobbyBoy
         else
           host_name opts[:host]
         end
-      opts[:refresh_offset] ||= 60.seconds
+      opts[:refresh_offset] ||= 120.seconds
       opts[:refresh_interval] ||= 30.seconds
       opts[:logged_in] ||= lambda { false }
 
