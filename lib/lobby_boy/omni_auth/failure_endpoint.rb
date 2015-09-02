@@ -42,8 +42,14 @@ module LobbyBoy
         origin =~ /#{script_name}\/session\/state/
       end
 
+      ##
+      # Authentication with &prompt=none fails if the user is not already signed in
+      # with the respective provider. Retry without &prompt=none in that case.
+      #
+      # Google responds with 'immediate_failed' in that case.
+      # Our own concierge with 'interaction_required'.
       def retry?
-        error.message == 'interaction_required'
+        ['immediate_failed', 'interaction_required'].include? error.message
       end
 
       def retry_interactive
