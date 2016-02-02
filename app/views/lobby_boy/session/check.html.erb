@@ -23,6 +23,10 @@
         }
 
         this.checkSession = function() {
+            if (document.hidden === true) {
+              return; // don't check session if window/tab is inactive
+            }
+        
             var provider = self.getIFrame("openid_connect_provider");
 
             var message = function(state) {
