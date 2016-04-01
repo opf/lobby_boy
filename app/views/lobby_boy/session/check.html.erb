@@ -26,7 +26,7 @@
             if (document.hidden === true) {
               return; // don't check session if window/tab is inactive
             }
-        
+
             var provider = self.getIFrame("openid_connect_provider");
 
             var message = function(state) {
@@ -168,6 +168,12 @@
         <% else %>
             document.addEventListener("DOMContentLoaded", function(event) {
               setTimeout(self.checkSession, 1000);
+            });
+
+            window.addEventListener('load', function () {
+              window.addEventListener('focus', self.checkSession);
+              window.addEventListener('focus', self.startTimer);
+              window.addEventListener('blur', self.stopTimer);
             });
         <% end %>
 
