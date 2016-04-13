@@ -86,7 +86,8 @@
         };
 
         this.stopTimer = function() {
-            clearInterval(self.timerID)
+            clearInterval(self.timerID);
+            self.timerID = undefined;
         };
 
         this.reauthenticate = function() {
