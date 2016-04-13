@@ -124,7 +124,7 @@
             <% if LobbyBoy.client.on_login_js_partial %>
                 <%= render partial: LobbyBoy.client.on_login_js_partial, formats: [:js] %>
             <% else %>
-                window.parent.document.location.reload();
+                console.log("User has logged in at OP.");
             <% end %>
         };
 
