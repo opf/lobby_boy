@@ -2,7 +2,7 @@ module LobbyBoy
   class SessionController < ActionController::Base
     layout false
 
-    before_filter :set_cache_buster
+    before_action :set_cache_buster
 
     def check
       response.headers['X-Frame-Options'] = 'SAMEORIGIN'
