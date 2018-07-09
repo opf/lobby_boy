@@ -17,5 +17,5 @@ Gem::Specification.new do |s|
   s.add_dependency 'rails', '>= 3.2.21'
 
   s.add_dependency 'omniauth', '~> 1.1'
-  s.add_dependency 'omniauth-openid-connect', '>= 0.2'
+  s.add_dependency 'omniauth-openid-connect', '>= 0.2.1'
 end
