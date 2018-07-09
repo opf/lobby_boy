@@ -7,14 +7,18 @@ module SessionManagement
   # Always append 'prompt=none' to every authorization request to make the login
   # automatic if possible.
   def authorize_uri
-    LobbyBoy::Util::URI.add_query_params super,
-                                         prompt: request.params['prompt'] || 'none',
-                                         id_token_hint: request.params['id_token_hint']
+    return super unless LobbyBoy.configured?
+
+    LobbyBoy::Util::URI.add_query_params(
+      super,
+      prompt: request.params['prompt'] || options.prompt || 'none',
+      id_token_hint: request.params['id_token_hint']
+    )
   end
 
   def access_token
     return super unless LobbyBoy.configured?
-    
+
     at = super
 
     @id_token ||= begin

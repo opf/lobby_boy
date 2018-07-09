@@ -13,7 +13,9 @@ module LobbyBoy
 
         additional_params.each do |name, value|
           if value
-            params << [name, value]
+            params.delete_if { |param_name, _| param_name == name.to_s } # override existing
+
+            params << [name.to_s, value]
           end
         end
 
